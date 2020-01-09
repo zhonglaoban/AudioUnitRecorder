@@ -14,15 +14,14 @@
 		456E4307238517B3004F5D1B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 456E4306238517B3004F5D1B /* Assets.xcassets */; };
 		456E430A238517B3004F5D1B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 456E4308238517B3004F5D1B /* LaunchScreen.storyboard */; };
 		456E430D238517B3004F5D1B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 456E430C238517B3004F5D1B /* main.m */; };
-		456E4316238519AF004F5D1B /* ZFAudioQueuePlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 456E4315238519AF004F5D1B /* ZFAudioQueuePlayer.m */; };
-		456E4319238519C0004F5D1B /* ZFAudioQueueRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 456E4318238519C0004F5D1B /* ZFAudioQueueRecorder.m */; };
-		456E431D23862C32004F5D1B /* ZFAudioSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 456E431C23862C32004F5D1B /* ZFAudioSession.m */; };
+		45B5216423B2015B00FE354C /* ZFAudioSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 45B5216323B2015B00FE354C /* ZFAudioSession.m */; };
+		45B5216A23B2022900FE354C /* ZFAudioUnitRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 45B5216923B2022900FE354C /* ZFAudioUnitRecorder.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		455D051E238C1A2600F6F74D /* ZFAudioFileManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZFAudioFileManager.h; sourceTree = "<group>"; };
 		455D051F238C1A2600F6F74D /* ZFAudioFileManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZFAudioFileManager.m; sourceTree = "<group>"; };
-		456E42F7238517B2004F5D1B /* AudioQueueServices.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioQueueServices.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		456E42F7238517B2004F5D1B /* AudioUnitRecorder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioUnitRecorder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		456E42FA238517B2004F5D1B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		456E42FB238517B2004F5D1B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		456E4300238517B2004F5D1B /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
@@ -32,12 +31,10 @@
 		456E4309238517B3004F5D1B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		456E430B238517B3004F5D1B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		456E430C238517B3004F5D1B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		456E4314238519AF004F5D1B /* ZFAudioQueuePlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZFAudioQueuePlayer.h; sourceTree = "<group>"; };
-		456E4315238519AF004F5D1B /* ZFAudioQueuePlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZFAudioQueuePlayer.m; sourceTree = "<group>"; };
-		456E4317238519C0004F5D1B /* ZFAudioQueueRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZFAudioQueueRecorder.h; sourceTree = "<group>"; };
-		456E4318238519C0004F5D1B /* ZFAudioQueueRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZFAudioQueueRecorder.m; sourceTree = "<group>"; };
-		456E431B23862C32004F5D1B /* ZFAudioSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZFAudioSession.h; sourceTree = "<group>"; };
-		456E431C23862C32004F5D1B /* ZFAudioSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZFAudioSession.m; sourceTree = "<group>"; };
+		45B5216223B2015B00FE354C /* ZFAudioSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZFAudioSession.h; sourceTree = "<group>"; };
+		45B5216323B2015B00FE354C /* ZFAudioSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZFAudioSession.m; sourceTree = "<group>"; };
+		45B5216823B2022900FE354C /* ZFAudioUnitRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZFAudioUnitRecorder.h; sourceTree = "<group>"; };
+		45B5216923B2022900FE354C /* ZFAudioUnitRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZFAudioUnitRecorder.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,7 +51,7 @@
 		456E42EE238517B2004F5D1B = {
 			isa = PBXGroup;
 			children = (
-				456E42F9238517B2004F5D1B /* AudioQueueServices */,
+				456E42F9238517B2004F5D1B /* AudioUnitRecorder */,
 				456E42F8238517B2004F5D1B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,17 +59,17 @@
 		456E42F8238517B2004F5D1B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				456E42F7238517B2004F5D1B /* AudioQueueServices.app */,
+				456E42F7238517B2004F5D1B /* AudioUnitRecorder.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		456E42F9238517B2004F5D1B /* AudioQueueServices */ = {
+		456E42F9238517B2004F5D1B /* AudioUnitRecorder */ = {
 			isa = PBXGroup;
 			children = (
+				45B5216123B2015B00FE354C /* AudioUnit */,
 				455D051E238C1A2600F6F74D /* ZFAudioFileManager.h */,
 				455D051F238C1A2600F6F74D /* ZFAudioFileManager.m */,
-				456E431323851999004F5D1B /* AudioQueue */,
 				456E42FA238517B2004F5D1B /* AppDelegate.h */,
 				456E42FB238517B2004F5D1B /* AppDelegate.m */,
 				456E4300238517B2004F5D1B /* ViewController.h */,
@@ -83,28 +80,26 @@
 				456E430B238517B3004F5D1B /* Info.plist */,
 				456E430C238517B3004F5D1B /* main.m */,
 			);
-			path = AudioQueueServices;
+			path = AudioUnitRecorder;
 			sourceTree = "<group>";
 		};
-		456E431323851999004F5D1B /* AudioQueue */ = {
+		45B5216123B2015B00FE354C /* AudioUnit */ = {
 			isa = PBXGroup;
 			children = (
-				456E4314238519AF004F5D1B /* ZFAudioQueuePlayer.h */,
-				456E4315238519AF004F5D1B /* ZFAudioQueuePlayer.m */,
-				456E4317238519C0004F5D1B /* ZFAudioQueueRecorder.h */,
-				456E4318238519C0004F5D1B /* ZFAudioQueueRecorder.m */,
-				456E431B23862C32004F5D1B /* ZFAudioSession.h */,
-				456E431C23862C32004F5D1B /* ZFAudioSession.m */,
+				45B5216223B2015B00FE354C /* ZFAudioSession.h */,
+				45B5216323B2015B00FE354C /* ZFAudioSession.m */,
+				45B5216823B2022900FE354C /* ZFAudioUnitRecorder.h */,
+				45B5216923B2022900FE354C /* ZFAudioUnitRecorder.m */,
 			);
-			path = AudioQueue;
+			path = AudioUnit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		456E42F6238517B2004F5D1B /* AudioQueueServices */ = {
+		456E42F6238517B2004F5D1B /* AudioUnitRecorder */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 456E4310238517B3004F5D1B /* Build configuration list for PBXNativeTarget "AudioQueueServices" */;
+			buildConfigurationList = 456E4310238517B3004F5D1B /* Build configuration list for PBXNativeTarget "AudioUnitRecorder" */;
 			buildPhases = (
 				456E42F3238517B2004F5D1B /* Sources */,
 				456E42F4238517B2004F5D1B /* Frameworks */,
@@ -114,9 +109,9 @@
 			);
 			dependencies = (
 			);
-			name = AudioQueueServices;
+			name = AudioUnitRecorder;
 			productName = AudioQueuePlayer;
-			productReference = 456E42F7238517B2004F5D1B /* AudioQueueServices.app */;
+			productReference = 456E42F7238517B2004F5D1B /* AudioUnitRecorder.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -133,7 +128,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 456E42F2238517B2004F5D1B /* Build configuration list for PBXProject "AudioQueueServices" */;
+			buildConfigurationList = 456E42F2238517B2004F5D1B /* Build configuration list for PBXProject "AudioUnitRecorder" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -146,7 +141,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				456E42F6238517B2004F5D1B /* AudioQueueServices */,
+				456E42F6238517B2004F5D1B /* AudioUnitRecorder */,
 			);
 		};
 /* End PBXProject section */
@@ -169,13 +164,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45B5216423B2015B00FE354C /* ZFAudioSession.m in Sources */,
+				45B5216A23B2022900FE354C /* ZFAudioUnitRecorder.m in Sources */,
 				456E4302238517B2004F5D1B /* ViewController.m in Sources */,
-				456E431D23862C32004F5D1B /* ZFAudioSession.m in Sources */,
 				456E42FC238517B2004F5D1B /* AppDelegate.m in Sources */,
 				455D0520238C1A2700F6F74D /* ZFAudioFileManager.m in Sources */,
 				456E430D238517B3004F5D1B /* main.m in Sources */,
-				456E4316238519AF004F5D1B /* ZFAudioQueuePlayer.m in Sources */,
-				456E4319238519C0004F5D1B /* ZFAudioQueueRecorder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -317,13 +311,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VB8MVMJBU4;
-				INFOPLIST_FILE = "$(SRCROOT)/AudioQueueServices/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AudioUnitRecorder/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = zf.AudioQueuePlayer;
+				PRODUCT_BUNDLE_IDENTIFIER = zf.AudioUnitRecorder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -335,13 +329,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = VB8MVMJBU4;
-				INFOPLIST_FILE = "$(SRCROOT)/AudioQueueServices/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/AudioUnitRecorder/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = zf.AudioQueuePlayer;
+				PRODUCT_BUNDLE_IDENTIFIER = zf.AudioUnitRecorder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -350,7 +344,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		456E42F2238517B2004F5D1B /* Build configuration list for PBXProject "AudioQueueServices" */ = {
+		456E42F2238517B2004F5D1B /* Build configuration list for PBXProject "AudioUnitRecorder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				456E430E238517B3004F5D1B /* Debug */,
@@ -359,7 +353,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		456E4310238517B3004F5D1B /* Build configuration list for PBXNativeTarget "AudioQueueServices" */ = {
+		456E4310238517B3004F5D1B /* Build configuration list for PBXNativeTarget "AudioUnitRecorder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				456E4311238517B3004F5D1B /* Debug */,

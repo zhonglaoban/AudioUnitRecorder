@@ -1,6 +1,6 @@
 //
 //  ZFAudioSession.h
-//  AudioQueueServices
+//  AudioUnitRecorder
 //
 //  Created by 钟凡 on 2019/11/21.
 //  Copyright © 2019 钟凡. All rights reserved.
@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)setPlayAndRecord;
 + (void)setPlayback;
++ (void)setSampleRate:(double)sampleRate duration:(double)duration;
 
 @end
 
