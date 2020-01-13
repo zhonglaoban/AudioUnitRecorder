@@ -29,6 +29,7 @@
         [self getAudioSessionProperty];
         [self setupAudioFormat];
         dispatch_async(_queue, ^{
+//            [self createInputUnit];
             [self getAudioUnits];
             [self setupAudioUnits];
         });
@@ -103,21 +104,21 @@
     printf("enable input %d \n", (int)status);
     
     //关闭音频输出
-    UInt32 diableOutput = 0; // to disable output
+    UInt32 disableOutput = 0; // to disable output
     status = AudioUnitSetProperty(_ioUnit,
                                   kAudioOutputUnitProperty_EnableIO,
                                   kAudioUnitScope_Output,
                                   0,
-                                  &diableOutput,
-                                  sizeof(diableOutput));
-    printf("enable input %d \n", (int)status);
+                                  &disableOutput,
+                                  sizeof(disableOutput));
+    printf("disable output %d \n", (int)status);
     
     //设置stram format
     propertySize = sizeof (AudioStreamBasicDescription);
     status = AudioUnitSetProperty(_ioUnit,
                                   kAudioUnitProperty_StreamFormat,
-                                  kAudioUnitScope_Input,
-                                  0,
+                                  kAudioUnitScope_Output,
+                                  1,
                                   &_asbd,
                                   propertySize);
     printf("set input format %d \n", (int)status);
@@ -125,8 +126,8 @@
     AudioStreamBasicDescription deviceFormat;
     status = AudioUnitGetProperty(_ioUnit,
                                   kAudioUnitProperty_StreamFormat,
-                                  kAudioUnitScope_Output,
-                                  1,
+                                  kAudioUnitScope_Input,
+                                  0,
                                   &deviceFormat,
                                   &propertySize);
     printf("get input format %d \n", (int)status);
@@ -140,13 +141,13 @@
                                   0,
                                   &maxFramesPerSlice,
                                   propertySize);
-    printf("set max frame per slice: %d, %d \n", maxFramesPerSlice, (int)status);
+    printf("set max frame per slice: %d, %d \n", (int)maxFramesPerSlice, (int)status);
     AudioUnitGetProperty(_ioUnit,
                          kAudioUnitProperty_MaximumFramesPerSlice,
                          kAudioUnitScope_Global, 0,
                          &maxFramesPerSlice,
                          &propertySize);
-    printf("get max frame per slice: %d, %d \n", maxFramesPerSlice, (int)status);
+    printf("get max frame per slice: %d, %d \n", (int)maxFramesPerSlice, (int)status);
     
     //设置回调
     AURenderCallbackStruct callbackStruct;
@@ -155,7 +156,7 @@
     
     status = AudioUnitSetProperty(_ioUnit,
                                   kAudioOutputUnitProperty_SetInputCallback,
-                                  kAudioUnitScope_Global,
+                                  kAudioUnitScope_Input,
                                   0,
                                   &callbackStruct,
                                   sizeof(callbackStruct));
@@ -164,6 +165,11 @@
 - (void)startRecord {
     dispatch_async(_queue, ^{
         OSStatus status;
+//        status = AudioUnitInitialize(self.ioUnit);
+//        printf("AudioUnitInitialize %d \n", (int)status);
+//        status = AudioOutputUnitStart(self.ioUnit);
+//        printf("AudioOutputUnitStart %d \n", (int)status);
+        
         status = AUGraphInitialize(self.graph);
         printf("AUGraphInitialize %d \n", (int)status);
         status = AUGraphStart(self.graph);
@@ -206,6 +212,10 @@ OSStatus inputCallback(void *inRefCon,
     
     status = AudioUnitRender(recorder.ioUnit, ioActionFlags, inTimeStamp, 1, inNumberFrames, &bufferList);
     
+    if (status != noErr) {
+        printf("AudioUnitRender %d \n", (int)status);
+        return status;
+    }
     if ([recorder.delegate respondsToSelector:@selector(audioRecorder:didRecoredAudioData:length:)]) {
         [recorder.delegate audioRecorder:recorder didRecoredAudioData:buffer.mData length:buffer.mDataByteSize];
     }

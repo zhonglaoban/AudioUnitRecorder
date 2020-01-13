@@ -32,8 +32,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    [ZFAudioSession setPlayAndRecord];
+    [ZFAudioSession setSampleRate:16000 duration:0.02];
+    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
+    
+    double sampleRate = audioSession.sampleRate;
+    
     AudioStreamBasicDescription absd = {0};
-    absd.mSampleRate = 16000;
+    absd.mSampleRate = sampleRate;
     absd.mFormatID = kAudioFormatLinearPCM;
     absd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
     absd.mBytesPerPacket = 2;
@@ -41,9 +47,6 @@
     absd.mBytesPerFrame = 2;
     absd.mChannelsPerFrame = 1;
     absd.mBitsPerChannel = 16;
-    
-    [ZFAudioSession setPlayAndRecord];
-    [ZFAudioSession setSampleRate:16000 duration:0.02];
     
     _audioRecorder = [[ZFAudioUnitRecorder alloc] init];
     _audioRecorder.delegate = self;
