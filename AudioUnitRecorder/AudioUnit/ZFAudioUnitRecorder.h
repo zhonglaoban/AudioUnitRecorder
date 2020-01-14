@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ZFAudioUnitRecorder : NSObject
 
 @property (nonatomic, weak) id<ZFAudioUnitRecorderDelegate> delegate;
+
+- (instancetype)initWithAsbd:(AudioStreamBasicDescription)asbd;
 
 - (void)startRecord;
 - (void)stopRecord;

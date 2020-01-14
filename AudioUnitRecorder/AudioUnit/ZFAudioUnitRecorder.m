@@ -7,7 +7,6 @@
 //
 
 #import "ZFAudioUnitRecorder.h"
-#import <AVFoundation/AVFoundation.h>
 
 @interface ZFAudioUnitRecorder()
 
@@ -16,18 +15,15 @@
 @property (nonatomic) AUGraph graph;
 @property (nonatomic) AudioUnit ioUnit;
 @property (nonatomic) AudioComponentDescription ioUnitDesc;
-@property (nonatomic, assign) double sampleTime;
-@property (nonatomic, assign) double sampleRate;
-
 @end
 
-
 @implementation ZFAudioUnitRecorder
-- (instancetype)init {
-    if (self = [super init]) {
+- (instancetype)initWithAsbd:(AudioStreamBasicDescription)asbd {
+    self = [super init];
+    if (self) {
+        _asbd = asbd;
         _queue = dispatch_queue_create("zf.audioRecorder", DISPATCH_QUEUE_SERIAL);
-        [self getAudioSessionProperty];
-        [self setupAudioFormat];
+        [self setupAcd];
         dispatch_async(_queue, ^{
 //            [self createInputUnit];
             [self getAudioUnits];
@@ -36,10 +32,10 @@
     }
     return self;
 }
-- (void)setupAudioFormat {
+- (instancetype)init {
     UInt32 mChannelsPerFrame = 1;
     _asbd.mFormatID = kAudioFormatLinearPCM;
-    _asbd.mSampleRate = _sampleRate;
+    _asbd.mSampleRate = 16000;
     _asbd.mChannelsPerFrame = mChannelsPerFrame;
     //pcm数据范围(−2^16 + 1) ～ (2^16 - 1)
     _asbd.mBitsPerChannel = 16;
@@ -49,22 +45,15 @@
     _asbd.mBytesPerFrame = mChannelsPerFrame * 2;
     _asbd.mFramesPerPacket = 1;
     _asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
-    
+    return [self initWithAsbd:_asbd];
+}
+- (void)setupAcd {
     _ioUnitDesc.componentType = kAudioUnitType_Output;
     //vpio模式
     _ioUnitDesc.componentSubType = kAudioUnitSubType_VoiceProcessingIO;
     _ioUnitDesc.componentManufacturer = kAudioUnitManufacturer_Apple;
     _ioUnitDesc.componentFlags = 0;
     _ioUnitDesc.componentFlagsMask = 0;
-}
-- (void)getAudioSessionProperty {
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    
-    _sampleTime = audioSession.IOBufferDuration;
-    _sampleRate = audioSession.sampleRate;
-    
-    printf("_sampleTime %f \n", _sampleTime);
-    printf("_sampleTime %f \n", _sampleRate);
 }
 - (void)getAudioUnits {
     OSStatus status = NewAUGraph(&_graph);
@@ -126,8 +115,8 @@
     AudioStreamBasicDescription deviceFormat;
     status = AudioUnitGetProperty(_ioUnit,
                                   kAudioUnitProperty_StreamFormat,
-                                  kAudioUnitScope_Input,
-                                  0,
+                                  kAudioUnitScope_Output,
+                                  1,
                                   &deviceFormat,
                                   &propertySize);
     printf("get input format %d \n", (int)status);

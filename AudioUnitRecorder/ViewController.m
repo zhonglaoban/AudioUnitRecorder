@@ -38,23 +38,23 @@
     
     double sampleRate = audioSession.sampleRate;
     
-    AudioStreamBasicDescription absd = {0};
-    absd.mSampleRate = sampleRate;
-    absd.mFormatID = kAudioFormatLinearPCM;
-    absd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
-    absd.mBytesPerPacket = 2;
-    absd.mFramesPerPacket = 1;
-    absd.mBytesPerFrame = 2;
-    absd.mChannelsPerFrame = 1;
-    absd.mBitsPerChannel = 16;
+    AudioStreamBasicDescription asbd = {0};
+    asbd.mSampleRate = 16000;
+    asbd.mFormatID = kAudioFormatLinearPCM;
+    asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+    asbd.mBytesPerPacket = 2;
+    asbd.mFramesPerPacket = 1;
+    asbd.mBytesPerFrame = 2;
+    asbd.mChannelsPerFrame = 1;
+    asbd.mBitsPerChannel = 16;
     
-    _audioRecorder = [[ZFAudioUnitRecorder alloc] init];
+    _audioRecorder = [[ZFAudioUnitRecorder alloc] initWithAsbd:asbd];
     _audioRecorder.delegate = self;
     
     NSString *directory = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
     NSString *filePath = [NSString stringWithFormat:@"%@/test.aif", directory];
     NSLog(@"%@", filePath);
-    _audioWriter = [[ZFAudioFileManager alloc] initWithAsbd:absd];
+    _audioWriter = [[ZFAudioFileManager alloc] initWithAsbd:asbd];
     [_audioWriter openFileWithFilePath:filePath];
 }
 - (void)audioRecorder:(ZFAudioUnitRecorder *)audioRecorder didRecoredAudioData:(void *)data length:(unsigned int)length {
