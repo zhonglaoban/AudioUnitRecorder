@@ -1,273 +1,252 @@
-# Audio Queue Services介绍
-这个文档会分为以下3个部分介绍Audio Queue Services:
-1. [Audio Queue Services的结构和处理逻辑](#audio-queue-services%e7%9a%84%e7%bb%93%e6%9e%84%e5%92%8c%e5%a4%84%e7%90%86%e9%80%bb%e8%be%91)
-2. [使用Audio Queue Services录制音频](#%e4%bd%bf%e7%94%a8audio-queue-services%e5%bd%95%e5%88%b6%e9%9f%b3%e9%a2%91)
-3. [使用Audio Queue Services播放音频](#%e4%bd%bf%e7%94%a8audio-queue-services%e6%92%ad%e6%94%be%e9%9f%b3%e9%a2%91)
+# 使用 Audio Unit 录制音频
+- [使用 Audio Unit 录制音频](#%e4%bd%bf%e7%94%a8-audio-unit-%e5%bd%95%e5%88%b6%e9%9f%b3%e9%a2%91)
+  - [Audio Unit 能做什么](#audio-unit-%e8%83%bd%e5%81%9a%e4%bb%80%e4%b9%88)
+  - [Audio Unit 的一些相关知识点](#audio-unit-%e7%9a%84%e4%b8%80%e4%ba%9b%e7%9b%b8%e5%85%b3%e7%9f%a5%e8%af%86%e7%82%b9)
+    - [AUGraph](#augraph)
+    - [AudioUnit](#audiounit)
+    - [AudioStreamBasicDescription](#audiostreambasicdescription)
+    - [AudioComponentDescription](#audiocomponentdescription)
+  - [Audio Unit 实现音频录制功能](#audio-unit-%e5%ae%9e%e7%8e%b0%e9%9f%b3%e9%a2%91%e5%bd%95%e5%88%b6%e5%8a%9f%e8%83%bd)
+    - [初始化](#%e5%88%9d%e5%a7%8b%e5%8c%96)
+    - [设置AudioComponentDescription](#%e8%ae%be%e7%bd%aeaudiocomponentdescription)
+    - [获取Audio Unit实例](#%e8%8e%b7%e5%8f%96audio-unit%e5%ae%9e%e4%be%8b)
+    - [设置Audio Unit属性](#%e8%ae%be%e7%bd%aeaudio-unit%e5%b1%9e%e6%80%a7)
+    - [开始录制](#%e5%bc%80%e5%a7%8b%e5%bd%95%e5%88%b6)
+    - [停止录制](#%e5%81%9c%e6%ad%a2%e5%bd%95%e5%88%b6)
+    - [AURenderCallback](#aurendercallback)
 
-## Audio Queue Services的结构和处理逻辑
-- audio queue，它是一个在AudioQueue.h中的。用来连接硬件（麦克风和扬声器），管理内存（buffer的enqueue和消费），控制播放和采集。
-- audio queue buffers，audio queue中的内存对象，音频数据和长度存在里面。
-- audio quque callback，一个和audio queue绑定的回调，录制的时候，回调告诉你取音频数据；播放的时候，回调告诉你填充数据。
+## Audio Unit 能做什么
+Audio Unit 可以实现混音、均衡器、音频格式转化、实时的音频录制和播放等功能，它们可以动态的装载和卸载，具有高度可扩展性。因为 Audio Unit 是 iOS 系统里面比较底层的音频处理模块，所以使用起来比起其他iOS上的音频库需要更深入的理解。如果你不是需要实时性高、延迟低或者其他特殊处理的话，首先应该考虑使用 Media Player, AV Foundation, OpenAL, 或者 Audio Toolbox frameworks等库。它们都是基于Audio Unit 更高等级的封装，使用起来更加方便。
+![音频库的结构图](https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/AudioUnitHostingGuide_iOS/Art/Audio_frameworks_2x.png)
+## Audio Unit 的一些相关知识点
+### AUGraph
+Audio Unit的管理者，能够动态的加载、卸载Audio Unit，从而实现混音、变音、录制、播放等效果。
+### AudioUnit
+一个音频单元，有converter、effect、mixer、i/o这几种类型
+### AudioStreamBasicDescription
+描述音频数据的结构体，有采样率、声道、音频格式等参数。
+### AudioComponentDescription
+描述Audio Unit的结构体，有类型、厂商等参数。
 
-可以将硬件、audio queue、callback看成是一个圆环上的3个点，它们在不停的按照某一个方向在传输数据，buffer就是装数据的容器。
-## 使用Audio Queue Services录制音频
-![录制音频流程图](./images/1577092027071.jpg)
+## Audio Unit 实现音频录制功能
+![录制音频流程图](https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/AudioUnitHostingGuide_iOS/Art/IO_unit_2x.png)
 
-这里简单介绍一下录制的时候audio queue和硬件以及callback交互的步骤：
-1. 硬件采集音频数据，将它填充到空的buffer中
-2. audio queue将填充的数据告诉callback，硬件继续采集音频数据
-3. 在callback中可以将数据存起来或者发送给其他人
-4. callback使用完数据后将buffer重新放到缓冲区中
-5. audio queue将空的buffer放在队列的末尾，等待再次使用，硬件继续采集音频数据
-6. audio queue将新的填充满的数据告诉callback
+使用Audio Unit录制的时候，过程相对简单，我们使用一个Audio Unit就可以完成了，步骤如下：
+1. 设置好AudioComponentDescription，确定我们使用的Audio Unit类型
+2. 获取Audio Unit实例，我们有两种获取方式，通过AUGraph获取，通过AudioComponent获取。
+3. 设置Audio Unit的属性，告诉系统我们需要使用Audio Unit的哪些功能以及需要采集什么样的数据。
+4. 开始录制和结束录制的控制。
+5. 从回调函数中取得音频数据。
 
 ### 初始化
 ```objc
-- (instancetype)init {
-    if (self = [super init]) {
+- (instancetype)initWithAsbd:(AudioStreamBasicDescription)asbd {
+    self = [super init];
+    if (self) {
+        _asbd = asbd;
         _queue = dispatch_queue_create("zf.audioRecorder", DISPATCH_QUEUE_SERIAL);
-        [self getAudioSessionProperty];
-        [self setupAudioFormat];
+        [self setupAcd];
         dispatch_async(_queue, ^{
-            [self setupAudioQueue];
-            [self setupAudioQueueBuffers];
+//            [self createInputUnit];
+            [self getAudioUnits];
+            [self setupAudioUnits];
         });
     }
     return self;
 }
 ```
 
-为了确保顺序，这里我们创建了一个串行队列来处理任务。
-初始化的时候，先通过AVAudioSession获取当前设备的采样率和处理间隔。然后根据获取的参数计算合适的buffer大小。
+### 设置AudioComponentDescription
 ```objc
-- (void)setupAudioFormat {
-    UInt32 mChannelsPerFrame = 1;
-    _asbd.mFormatID = kAudioFormatLinearPCM;
-    _asbd.mSampleRate = _sampleRate;
-    _asbd.mChannelsPerFrame = mChannelsPerFrame;
-    //pcm数据范围(−2^16 + 1) ～ (2^16 - 1)
-    _asbd.mBitsPerChannel = 16;
-    //16 bit = 2 byte
-    _asbd.mBytesPerPacket = mChannelsPerFrame * 2;
-    //下面设置的是1 frame per packet, 所以 frame = packet
-    _asbd.mBytesPerFrame = mChannelsPerFrame * 2;
-    _asbd.mFramesPerPacket = 1;
-    _asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked;
+- (void)setupAcd {
+    _ioUnitDesc.componentType = kAudioUnitType_Output;
+    //vpio模式
+    _ioUnitDesc.componentSubType = kAudioUnitSubType_VoiceProcessingIO;
+    _ioUnitDesc.componentManufacturer = kAudioUnitManufacturer_Apple;
+    _ioUnitDesc.componentFlags = 0;
+    _ioUnitDesc.componentFlagsMask = 0;
 }
 ```
 
-### 创建audio queue
+### 获取Audio Unit实例
+通过AUGraph获取实例
 ```objc
-- (void)setupAudioQueue {
-    void *handle = (__bridge void *)self;
-    OSStatus status = AudioQueueNewInput(&_asbd, inputCallback, handle, NULL, NULL, 0, &_audioQueue);
-    printf("AudioQueueNewInput: %d \n", (int)status);
+- (void)getAudioUnits {
+    OSStatus status = NewAUGraph(&_graph);
+    printf("create graph %d \n", (int)status);
+    
+    AUNode ioNode;
+    status = AUGraphAddNode(_graph, &_ioUnitDesc, &ioNode);
+    printf("add ioNote %d \n", (int)status);
+
+    //instantiate the audio units
+    status = AUGraphOpen(_graph);
+    printf("open graph %d \n", (int)status);
+    
+    //obtain references to the audio unit instances
+    status = AUGraphNodeInfo(_graph, ioNode, NULL, &_ioUnit);
+    printf("get ioUnit %d \n", (int)status);
 }
 ```
-这里的AudioQueueInputCallback是一个c的函数，我们可以把self作为一个指针传进去。
-
-### 创建buffer
+通过AudioComponent获取实例
 ```objc
-- (void)allocateBuffers {
-    _bufferSize = _sampleRate * _sampleTime * _asbd.mBytesPerPacket;
-    for (int i = 0; i < kNumberBuffers; ++i) {
-        AudioQueueBufferRef buffer;
-        OSStatus status = AudioQueueAllocateBuffer(_audioQueue, _bufferSize, &buffer);
-        printf("recorder alloc buffer: %d, _bufferSize:%u \n", (int)status, (unsigned int)_bufferSize);
-        mBuffers[i] = buffer;
+- (void)createInputUnit {
+    AudioComponent comp = AudioComponentFindNext(NULL, &_ioUnitDesc);
+    if (comp == NULL) {
+        printf("can't get AudioComponent");
     }
+    OSStatus status = AudioComponentInstanceNew(comp, &(_ioUnit));
+    printf("creat audio unit %d \n", (int)status);
 }
 ```
-
+### 设置Audio Unit属性
+```objc
+- (void)setupAudioUnits {
+    OSStatus status;
+    //音频输入默认是关闭的，需要开启 0:关闭，1:开启
+    UInt32 enableInput = 1; // to enable input
+    UInt32 propertySize;
+    status = AudioUnitSetProperty(_ioUnit,
+                                  kAudioOutputUnitProperty_EnableIO,
+                                  kAudioUnitScope_Input,
+                                  1,
+                                  &enableInput,
+                                  sizeof(enableInput));
+    printf("enable input %d \n", (int)status);
+    
+    //关闭音频输出
+    UInt32 disableOutput = 0; // to disable output
+    status = AudioUnitSetProperty(_ioUnit,
+                                  kAudioOutputUnitProperty_EnableIO,
+                                  kAudioUnitScope_Output,
+                                  0,
+                                  &disableOutput,
+                                  sizeof(disableOutput));
+    printf("disable output %d \n", (int)status);
+    
+    //设置stram format
+    propertySize = sizeof (AudioStreamBasicDescription);
+    status = AudioUnitSetProperty(_ioUnit,
+                                  kAudioUnitProperty_StreamFormat,
+                                  kAudioUnitScope_Output,
+                                  1,
+                                  &_asbd,
+                                  propertySize);
+    printf("set input format %d \n", (int)status);
+    //检查是否设置成功
+    AudioStreamBasicDescription deviceFormat;
+    status = AudioUnitGetProperty(_ioUnit,
+                                  kAudioUnitProperty_StreamFormat,
+                                  kAudioUnitScope_Output,
+                                  1,
+                                  &deviceFormat,
+                                  &propertySize);
+    printf("get input format %d \n", (int)status);
+    
+    //设置最大采集帧数
+    UInt32 maxFramesPerSlice = 4096;
+    propertySize = sizeof(UInt32);
+    status = AudioUnitSetProperty(_ioUnit,
+                                  kAudioUnitProperty_MaximumFramesPerSlice,
+                                  kAudioUnitScope_Global,
+                                  0,
+                                  &maxFramesPerSlice,
+                                  propertySize);
+    printf("set max frame per slice: %d, %d \n", (int)maxFramesPerSlice, (int)status);
+    AudioUnitGetProperty(_ioUnit,
+                         kAudioUnitProperty_MaximumFramesPerSlice,
+                         kAudioUnitScope_Global,
+                         0,
+                         &maxFramesPerSlice,
+                         &propertySize);
+    printf("get max frame per slice: %d, %d \n", (int)maxFramesPerSlice, (int)status);
+    
+    //设置回调
+    AURenderCallbackStruct callbackStruct;
+    callbackStruct.inputProc = &inputCallback;
+    callbackStruct.inputProcRefCon = (__bridge void *_Nullable)(self);
+    
+    status = AudioUnitSetProperty(_ioUnit,
+                                  kAudioOutputUnitProperty_SetInputCallback,
+                                  kAudioUnitScope_Input,
+                                  0,
+                                  &callbackStruct,
+                                  sizeof(callbackStruct));
+    printf("set render callback %d \n", (int)status);
+}
+```
 ### 开始录制
+注释的部分是不使用AUGraph的方式。
 ```objc
 - (void)startRecord {
-    [self checkAudioAuthorization:^(int code, NSString *message) {
-        NSLog(@"checkAudioAuthorization code: %d, message: %@", code, message);
-    }];
     dispatch_async(_queue, ^{
-        [self enqueueBuffers];
-        //start audio queue
-        OSStatus status = AudioQueueStart(self.audioQueue, NULL);
-        if (status == noErr) {
-            self.isRunning = YES;
-        }
-        printf("AudioQueueStart: %d \n", (int)status);
+        OSStatus status;
+//        status = AudioUnitInitialize(self.ioUnit);
+//        printf("AudioUnitInitialize %d \n", (int)status);
+//        status = AudioOutputUnitStart(self.ioUnit);
+//        printf("AudioOutputUnitStart %d \n", (int)status);
+        
+        status = AUGraphInitialize(self.graph);
+        printf("AUGraphInitialize %d \n", (int)status);
+        status = AUGraphStart(self.graph);
+        printf("AUGraphStart %d \n", (int)status);
     });
 }
 ```
-我们要开始录制了，录制前我们还是先检查权限。然后将空的buffer放到队列中供audio queue填充数据。
 
 ### 停止录制
 ```objc
 - (void)stopRecord {
     dispatch_async(_queue, ^{
-        //stop audio queue
-        OSStatus status = AudioQueueStop(self.audioQueue, true);
-        if (status == noErr) {
-            self.isRunning = NO;
-        }
-        printf("AudioQueueStop: %d \n", (int)status);
+        OSStatus status;
+        status = AUGraphStop(self.graph);
+        printf("AUGraphStop %d \n", (int)status);
     });
 }
 ```
 
-### AudioQueueInputCallback
+### AURenderCallback
 ```objc
-static void inputCallback(void * inUserData,
-                          AudioQueueRef inAQ,
-                          AudioQueueBufferRef inBuffer,
-                          const AudioTimeStamp * inStartTime,
-                          UInt32 inNumberPacketDescriptions,
-                          const AudioStreamPacketDescription *inPacketDescs) {
-    ZFAudioQueueRecorder *recorder = (__bridge ZFAudioQueueRecorder *)inUserData;
-    if (recorder.isRunning == NO) {
-        return;
-    }
-    //消费音频数据
-    if ([recorder.delegate respondsToSelector:@selector(audioRecorder:didRecoredAudioData:length:)]) {
-        [recorder.delegate audioRecorder:recorder didRecoredAudioData:inBuffer->mAudioData length:inBuffer->mAudioDataByteSize];
-    }
-    //将buffer给audio queue
-    OSStatus status = AudioQueueEnqueueBuffer(recorder.audioQueue, inBuffer, 0, NULL);
-    if (status != noErr) {
-        printf("recorder enqueue buffer: %d \n", (int)status);
-    }
-}
-```
-这里取到数据后使用代理的方式将数据传递出去，然后立即将使用后的buffer入队
+OSStatus inputCallback(void *inRefCon,
+                       AudioUnitRenderActionFlags *ioActionFlags,
+                       const AudioTimeStamp *inTimeStamp,
+                       UInt32 inBusNumber,
+                       UInt32 inNumberFrames,
+                       AudioBufferList *__nullable ioData) {
 
-## 使用Audio Queue Services播放音频
+    ZFAudioUnitRecorder *recorder = (__bridge ZFAudioUnitRecorder *)inRefCon;
 
-![播放音频流程图](./images/1577093798526.jpg)
-
-这里简单介绍一下播放的时候audio queue和硬件以及callback交互的步骤：
-1. 应用主动调用callback，将buffer给audio queue
-2. audio queue开始工作
-3. audio queue将填充的音频数据交给播放器播放
-4. audio queue判断如果还有数据，继续播放下一个buffer
-5. audio queue将空的buffer告诉callback需要填充数据
-6. callback填充完数据，然后将buffer入队
-
-### 初始化
-```objc
-- (instancetype)init {
-    if (self = [super init]) {
-        _queue = dispatch_queue_create("zf.audioPlayer", DISPATCH_QUEUE_SERIAL);
-        [self getAudioSessionProperty];
-        [self setupAudioFormat];
-        dispatch_async(_queue, ^{
-            [self setupAudioQueue];
-            [self setVolume:1.0];
-            [self allocateBuffers];
-        });
-    }
-    return self;
-}
-```
-步骤基本和录制的时候一致。
-
-### 创建audio queue
-```objc
-- (void)setupAudioQueue {
-    void *handle = (__bridge void *)self;
-    OSStatus status = AudioQueueNewOutput(&_asbd, outputCallback, handle, NULL, NULL, 0, &_audioQueue);
-    printf("AudioQueueNewOutput: %d \n", (int)status);
-}
-```
-
-### 创建buffer
-```objc
-- (void)allocateBuffers {
-    _bufferSize = _sampleRate * _sampleTime * _asbd.mBytesPerPacket;
-    for (int i = 0; i < kNumberBuffers; ++i) {
-        AudioQueueBufferRef buffer;
-        OSStatus status = AudioQueueAllocateBuffer(_audioQueue, _bufferSize, &buffer);
-        printf("player alloc buffer: %d, _bufferSize:%u \n", (int)status, (unsigned int)_bufferSize);
-        buffer->mUserData = (void *)NO;
-        buffer->mAudioDataByteSize = _bufferSize;
-        mBuffers[i] = buffer;
-    }
-}
-```
-
-### 开始播放
-```objc
-- (void)startPlay {
-    dispatch_async(_queue, ^{
-        [self enqueueBuffers];
-        //start audio queue
-        OSStatus status = AudioQueueStart(self.audioQueue, NULL);
-        if (status == noErr) {
-            self.isRunning = YES;
-        }
-        printf("AudioQueueStart: %d \n", (int)status);
-    });
-}
-```
-
-### 停止播放
-```objc
-- (void)stopPlay {
-    dispatch_async(_queue, ^{
-        //stop audio queue
-        OSStatus status = AudioQueueStop(self.audioQueue, true);
-        if (status == noErr) {
-            self.isRunning = NO;
-        }
-        printf("AudioQueueStop: %d \n", (int)status);
-    });
-}
-
-```
-### 播放音频数据
-```objc
-- (void)putAudioData:(void *)data length:(UInt32)length {
-    if (!_isRunning) {
-        return;
-    }
+    AudioBuffer buffer;
     
-    //这里处理的有点粗糙，音频数据可能会乱
-    AudioQueueBufferRef fillBuffer = NULL;
-    for (int i = 0; i < kNumberBuffers; ++i) {
-        AudioQueueBufferRef buffer = mBuffers[i];
-        BOOL bufferFiled = (BOOL)buffer->mUserData;
-        if (!bufferFiled) {
-            fillBuffer = buffer;
-            break;
-        }
-    }
-    if (fillBuffer == NULL) {
-        printf("没有可用buffer, 执行丢帧 \n");
-        return;
-    }
-    memcpy(fillBuffer->mAudioData, data, length);
-    fillBuffer->mAudioDataByteSize = length;
-    fillBuffer->mUserData = (void *)YES;
-}
-```
-这里需要注意，我使用了audio queue的buffer做为音频的缓冲区，如果录制回调和播放回调不是同步的话（和系统有关）可能会丢帧导致音效不太好的情况。
-
-### AudioQueueOutputCallback
-```objc
-static void outputCallback(void *outUserData,
-                           AudioQueueRef outAQ,
-                           AudioQueueBufferRef outBuffer) {
-    ZFAudioQueuePlayer *player = (__bridge ZFAudioQueuePlayer *)outUserData;
-    if (!player.isRunning) {
-        return;
-    }
-    if (player.playIndex >= kNumberBuffers) {
-        player.playIndex = 0;
-    }
-    AudioQueueBufferRef filledBuffer = player->mBuffers[player.playIndex];
-    memcpy(outBuffer->mAudioData, filledBuffer->mAudioData, filledBuffer->mAudioDataByteSize);
-    outBuffer->mUserData = (void *)NO;
-    OSStatus status = AudioQueueEnqueueBuffer(player.audioQueue, outBuffer, 0, NULL);
+    /**
+     on this point we define the number of channels, which is mono
+     for the iphone. the number of frames is usally 512 or 1024.
+     */
+    UInt32 size = inNumberFrames * recorder.asbd.mBytesPerFrame;
+    buffer.mDataByteSize = size; // sample size
+    buffer.mNumberChannels = 1; // one channel
+    buffer.mData = malloc(size); // buffer size
+    
+    // we put our buffer into a bufferlist array for rendering
+    AudioBufferList bufferList;
+    bufferList.mNumberBuffers = 1;
+    bufferList.mBuffers[0] = buffer;
+    
+    OSStatus status = noErr;
+    
+    status = AudioUnitRender(recorder.ioUnit, ioActionFlags, inTimeStamp, 1, inNumberFrames, &bufferList);
+    
     if (status != noErr) {
-        printf("play enqueue buffer: %d \n", (int)status);
+        printf("AudioUnitRender %d \n", (int)status);
+        return status;
     }
-    player.playIndex ++;
+    if ([recorder.delegate respondsToSelector:@selector(audioRecorder:didRecoredAudioData:length:)]) {
+        [recorder.delegate audioRecorder:recorder didRecoredAudioData:buffer.mData length:buffer.mDataByteSize];
+    }
+    free(buffer.mData);
+    
+    return status;
 }
 ```
-playIndex是为了保证按顺序enqueue buffer。
+1. 回调函数中并没有真正获取到数据，还需要调用AudioUnitRender去取数据。
+2. 我们使用了malloc开辟了一块内存空间，我们需要用free释放调。

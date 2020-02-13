@@ -34,9 +34,8 @@
     
     [ZFAudioSession setPlayAndRecord];
     [ZFAudioSession setSampleRate:16000 duration:0.02];
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
     
-    double sampleRate = audioSession.sampleRate;
+    NSLog(@"%@", [NSDate date]);
     
     AudioStreamBasicDescription asbd = {0};
     asbd.mSampleRate = 16000;

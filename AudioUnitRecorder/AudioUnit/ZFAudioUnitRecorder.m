@@ -15,7 +15,9 @@
 @property (nonatomic) AUGraph graph;
 @property (nonatomic) AudioUnit ioUnit;
 @property (nonatomic) AudioComponentDescription ioUnitDesc;
+
 @end
+
 
 @implementation ZFAudioUnitRecorder
 - (instancetype)initWithAsbd:(AudioStreamBasicDescription)asbd {
@@ -133,7 +135,8 @@
     printf("set max frame per slice: %d, %d \n", (int)maxFramesPerSlice, (int)status);
     AudioUnitGetProperty(_ioUnit,
                          kAudioUnitProperty_MaximumFramesPerSlice,
-                         kAudioUnitScope_Global, 0,
+                         kAudioUnitScope_Global,
+                         0,
                          &maxFramesPerSlice,
                          &propertySize);
     printf("get max frame per slice: %d, %d \n", (int)maxFramesPerSlice, (int)status);
@@ -208,6 +211,7 @@ OSStatus inputCallback(void *inRefCon,
     if ([recorder.delegate respondsToSelector:@selector(audioRecorder:didRecoredAudioData:length:)]) {
         [recorder.delegate audioRecorder:recorder didRecoredAudioData:buffer.mData length:buffer.mDataByteSize];
     }
+    free(buffer.mData);
     
     return status;
 }
